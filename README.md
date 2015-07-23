@@ -4,4 +4,4 @@ e com utilização de leds auxiliares.
 * O projeto está sendo concluído e o script logo estará disponível.
 
 # Circuito
-<img src="https://github.com/lucasmlima08/R01-ChassisSmart/blob/master/circuit.jpg" width="500" />
+<img src="https://github.com/lucasmlima08/R01-ChassisSmart/blob/master/circuit.png" width="500" />
