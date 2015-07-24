@@ -1,31 +1,33 @@
 //- Motores: rodas.
-#define motorRight = 0;
-#define motorLeft = 1;
+#define motorRight 0
+#define motorLeft 1
 //- Leds: faróis.
-#define lightFrontRight = 2;
-#define lightFrontLeft = 3;
+#define lightFrontRight 2
+#define lightFrontLeft 3
 //- Leds: setas.
-#define lightArrowRight = 4;
-#define lightArrowLeft = 5;
+#define lightArrowRight 4
+#define lightArrowLeft 5
 //- Leds: freios.
-#define lightBreakRight = 6;
-#define lightBreakLeft = 7;
+#define lightBreakRight 6
+#define lightBreakLeft 7
 //- Sensor ultrassônico.
-#define trigUltrasonic = 8;
-#define echoUltrasonic = 9;
+#define trigUltrasonic 8
+#define echoUltrasonic 9
 //- Botão: liga-desliga.
-#define buttonPower = 10;
+#define buttonPower 10
 //- Limite de colisão.
-#define limitCollision = 20;
+#define limitCollision 20
 
 //- Status de funcionamento.
 boolean ligado;
 //- Intervalo de tempo atual.
-int currentTime;
+int intervalTime;
 //- Direção atual.
 String currentDirection;
+//- Tempo para contagem de segudos.
+int lastTime;
 
-setup(){
+void setup(){
   	//- Pinos de saída.
   	for (int i=0; i <= 8; i++){
   		  pinMode(i, OUTPUT);
@@ -34,47 +36,55 @@ setup(){
   	for (int i=9; i <= 10; i++){
   		  pinMode(i, INPUT);
   	}
-    ligado = false;
-    currentTime = 0;
+    ligado = true;
+    intervalTime = 0;
     currentDirection = "break";
+    lastTime = millis();
 }
 
-loop(){
+void loop(){
 
     //- liga-desliga.
-  	power();
+  	//power();
 
     //- Chama processo se estiver ligado.
-    if (ligado == true){}
+    if (ligado == true){
         process();
-	}
+	  }
 }
 
 void process(){
     //- Verifica se vai colidir. 
     int collision = detectCollision();
-    if (collision == false){
-        int timeMillis = millis();
-        if (timeMillis + currentTime <= timeMillis){
+    if (collision == false){ //- Não vai colidir.
+        if (millis() - lastTime >= intervalTime){
+            lastTime = millis();
             motionChange(); //- Muda direção se o tempo esgotou.
         } else {
             movement(); //- Mantém direção.
         }
-    } else {
-		motionChange(); //- Muda direção se vai colidir.
-	}
-    currentTime--;
+    } else { //- Vai colidir.
+        //- Muda a direção para um dos lados. 
+        int generateDirection = random(2);
+        if (generateDirection == 0){
+            currentDirection = "right";
+        } else {
+            currentDirection = "left";
+        }
+        intervalTime = 1000 * 2;
+        movement(); //- Movimenta o veículo.
+	  }
 }
 
 void power(){
-  	int leituraBotao = digitalRead(botao);
-  	if (leituraBotao == HIGH){
-    	if (ligado == false){
-			ligado = true;
-            currentTime = 1000;
-    	} else {
-    		ligado = false;
-    	}
+  	if (digitalRead(buttonPower) == HIGH){
+        if (ligado == false){
+			      ligado = true;
+    	  } else {
+    		    ligado = false;
+    	  }
+        intervalTime = 0;
+        delay(1000);
   	}
 }
 
@@ -95,15 +105,16 @@ boolean detectCollision(){
 void motionChange(){
     //- 0 = frente/front | 1 = freio/break | 2 = direita/Right | 3 = esquerda/left.
     //- 3 segundos/seconds = frente/front | 2 segundos/seconds = freio/break | 1 segundo/second = direita-esquerda/right-left.
-    int generateDirection = randomSeed(4);
+    delayMicroseconds(3);
+    int generateDirection = random(4);
     if (generateDirection == 0){
-        currentTime = 1000 * 3;
+        intervalTime = 1000 * 3;
         currentDirection = "front";
     } else if (generateDirection == 1){
-        currentTime = 1000 * 2;
+        intervalTime = 1000 * 2;
         currentDirection = "break";
     } else {
-        currentTime = 1000;
+        intervalTime = 1000;
         if (generateDirection == 2){
             currentDirection = "right";
         } else {
